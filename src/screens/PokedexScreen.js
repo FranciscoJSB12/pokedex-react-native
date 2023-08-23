@@ -35,23 +35,18 @@ const PokedexScreen = () => {
                 });
             }
             setLoading(false);
-            setPokemons([...pokemons,...pokemonsArray]);
+            setPokemons([...pokemons, ...pokemonsArray]);
         } catch (err) {
             setLoading(false);
             setError(true);
             console.error(err);
         }
     }
-
     return (
         <SafeAreaView>
             {loading && <Text>Cargando...</Text>}
-            {(error && !pokemons) && <Text>Algo salió mal, intenta de nuevo</Text>}
-            {pokemons && <PokemonList 
-                        pokemons={pokemons} 
-                        loadPokemons={loadPokemons}
-                        nextUrl={nextUrl}
-                        />}
+            {error && <Text>Hubo un error...</Text>}
+            {pokemons?.length > 0 && <PokemonList pokemons={pokemons} loadPokemons={loadPokemons} nextUrl={nextUrl}/>}
         </SafeAreaView>
     );
 }
