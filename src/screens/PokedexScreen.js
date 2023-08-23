@@ -1,14 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import PokemonList from '../Components/PokemonList';
 import { getPokemonsApi, getPokemonDetailsByUrlApi } from '../api/pokemon';
 
 const PokedexScreen = () => {
     const [loading, setLoading] = useState(true);
-    const [pokemons, setPokemons] = useState(null);
+    const [error, setError] = useState(false);
+    const [pokemons, setPokemons] = useState([]);
+    const [nextUrl, setNextUrl] = useState(null);
     
     useEffect(() => {
         (async () => {
-            const res = await getPokemonsApi();
+            await loadPokemons();
+        })();
+    }, []);
+    
+    const loadPokemons = async () => {
+        try {
+            const res = await getPokemonsApi(nextUrl);
+            
+            setNextUrl(res.next);
 
             const pokemonsArray = [];
             
@@ -23,14 +35,24 @@ const PokedexScreen = () => {
                 });
             }
             setLoading(false);
-            setPokemons(pokemonsArray);
-        })();
-    }, []);
-    
+            setPokemons([...pokemons,...pokemonsArray]);
+        } catch (err) {
+            setLoading(false);
+            setError(true);
+            console.error(err);
+        }
+    }
+
     return (
-        <>
-            {loading ? <Text>Cargando...</Text> : <Text>{JSON.stringify(pokemons)}</Text>}
-        </>
+        <SafeAreaView>
+            {loading && <Text>Cargando...</Text>}
+            {(error && !pokemons) && <Text>Algo salió mal, intenta de nuevo</Text>}
+            {pokemons && <PokemonList 
+                        pokemons={pokemons} 
+                        loadPokemons={loadPokemons}
+                        nextUrl={nextUrl}
+                        />}
+        </SafeAreaView>
     );
 }
 
